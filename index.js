@@ -22,7 +22,11 @@ app.get("/getBase64", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send(`${req.ip} - ${geoip.lookup(req.ip)}`).status(200);
+  res
+    .send(
+      `${req.ip} - ${geoip.lookup(req.ip)} - ${geoip.lookup("49.249.224.0")}`
+    )
+    .status(200);
 });
 
 app.listen(3012, () => {
