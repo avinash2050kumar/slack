@@ -1,6 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
+const geoip = require("geoip-lite");
 
 const app = express();
 app.use(express.json());
@@ -21,7 +22,7 @@ app.get("/getBase64", (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send(req.header.ip).status(200);
 });
 
 app.listen(3012, () => {
