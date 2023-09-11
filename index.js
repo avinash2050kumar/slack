@@ -21,9 +21,9 @@ app.get("/getBase64", (req, res) => {
     });
 });
 
-/*app.get("/", (req, res) => {
+app.get("/", (req, res) => {
   res.send(`${req.header.ip} - 009 ${geoip.lookup(req.header.ip)}`).status(200);
-});*/
+});
 
 app.listen(3012, () => {
   console.log("Server is running on port 3012");
