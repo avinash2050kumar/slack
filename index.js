@@ -1,7 +1,7 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
-const geoip = require("geoip-lite");
+//const geoip = require("geoip-lite");
 const { validateCountry } = require("./middleware/validateCountry");
 
 const app = express();
@@ -22,7 +22,9 @@ app.get("/getBase64", (req, res) => {
     });
 });
 
-app.get("/", validateCountry, (req, res) => {
+app.get(
+  "/",
+  validateCountry /*, (req, res) => {
   res
     .send(
       `${req.ip} - ${geoip.lookup(req.ip)} - ${JSON.stringify(
@@ -30,7 +32,8 @@ app.get("/", validateCountry, (req, res) => {
       )}`
     )
     .status(200);
-});
+}*/
+);
 
 app.listen(3012, () => {
   console.log("Server is running on port 3012");
