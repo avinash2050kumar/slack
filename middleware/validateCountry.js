@@ -1,3 +1,5 @@
+const geoip = require("geoip-lite");
+
 const validateCountry = (req, res, next) => {
   const ipLocation = geoip.lookup(req.ip);
 
