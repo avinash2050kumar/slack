@@ -1,7 +1,7 @@
-const axios = require("axios");
-const geoip = require("geoip-lite");
+const maxmind = require("maxmind-db-reader");
+const lookup = maxmind.openSync("path/to/your/maxmind-db-file.mmdb");
 
-const fetchIpLocation = async ipAddress => {
+/*const fetchIpLocation = async ipAddress => {
   try {
     const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`);
     const response2 = await axios.get(
@@ -11,14 +11,17 @@ const fetchIpLocation = async ipAddress => {
   } catch (e) {
     console.log(e);
   }
-};
+};*/
 
 const validateCountry = (req, res, next) => {
   const ipAddress = req.headers["x-forwarded-for"] || req.ip; //|| req.connection.remoteAddress || req.ip;
 
-  const geo = geoip.lookup(ipAddress);
+  const ip = "8.8.8.8";
+  const result = lookup.get(ip);
 
-  res.send(geo).status(200);
+  console.log(result);
+
+  res.send(ip).status(200);
 
   /*fetchIpLocation(ipAddress)
     .then(ipLocation => {
