@@ -21,10 +21,12 @@ app.get("/getBase64", (req, res) => {
     });
 });
 
-app.get("/", (req, res) => {
+app.get("/", validateCountry, (req, res) => {
   res
     .send(
-      `${req.ip} - ${geoip.lookup(req.ip)} - ${geoip.lookup("49.249.224.0")}`
+      `${req.ip} - ${geoip.lookup(req.ip)} - ${JSON.stringify(
+        geoip.lookup("2.58.241.67")
+      )}`
     )
     .status(200);
 });
