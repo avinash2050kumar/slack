@@ -12,7 +12,7 @@ const validateCountry = (req, res, next) => {
     res.status(403).send("Forbidden");
   } else {
     //next();
-    res.status(200).send(ipLocation.country || "Unknown");
+    res.status(200).send(JSON.stringify(ipLocation));
   }
 };
 
