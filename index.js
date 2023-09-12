@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
 const geoip = require("geoip-lite");
+const { validateCountry } = require("./middleware/validateCountry");
 
 const app = express();
 app.use(express.json());
