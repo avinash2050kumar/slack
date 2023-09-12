@@ -1,19 +1,19 @@
 const { lookup } = require("geoip-lite");
 
 const validateCountry = (req, res, next) => {
-  const ipAddress =
-    req.headers["x-forwarded-for"] || req.connection.remoteAddress || req.ip;
+  const ipAddress = req.headers["x-forwarded-for"]; //|| req.connection.remoteAddress || req.ip;
 
   const ipLocation = lookup(ipAddress);
 
   console.log(ipAddress, ipLocation);
 
-  if (!!ipLocation && ipLocation.country && ipLocation.country === "US") {
+  /*if (!!ipLocation && ipLocation.country && ipLocation.country === "US") {
     res.status(403).send("Forbidden");
   } else {
     //next();
-    res.status(200).send(JSON.stringify(ipLocation));
-  }
+
+  }*/
+  res.status(200).send(JSON.stringify(ipLocation));
 };
 
 module.exports = { validateCountry };
