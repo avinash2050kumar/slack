@@ -2,7 +2,7 @@
 
 const validateCountry = (req, res, next) => {
   const ipAddress = req;
-  res.send(ipAddress).toJSON();
+  res.send(JSON.stringify(ipAddress));
   /* const ipLocation = lookup(ipAddress);
 
   if (!!ipLocation && ipLocation.country === "US") {
