@@ -1,19 +1,24 @@
-const geoip = require("geoip-lite");
+const axios = require("axios");
+
+const fetchIpLocation = async ipAddress => {
+  try {
+    const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`);
+    return response.data;
+  } catch (e) {
+    console.log(e);
+  }
+};
 
 const validateCountry = (req, res, next) => {
   const ipAddress = req.headers["x-forwarded-for"]; //|| req.connection.remoteAddress || req.ip;
 
-  const ipLocation = geoip.lookup(ipAddress);
-
-  console.log(ipAddress, ipLocation);
-
-  /*if (!!ipLocation && ipLocation.country && ipLocation.country === "US") {
-    res.status(403).send("Forbidden");
-  } else {
-    //next();
-
-  }*/
-  res.status(200).send(JSON.stringify(ipLocation));
+  fetchIpLocation(ipAddress)
+    .then(ipLocation => {
+      res.status(200).send(ipLocation);
+    })
+    .catch(err => {
+      res.send(err).status(500);
+    });
 };
 
 module.exports = { validateCountry };
