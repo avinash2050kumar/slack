@@ -1,9 +1,9 @@
-const { lookup } = require("geoip-lite");
+const geoip = require("geoip-lite");
 
 const validateCountry = (req, res, next) => {
   const ipAddress = req.headers["x-forwarded-for"]; //|| req.connection.remoteAddress || req.ip;
 
-  const ipLocation = lookup(ipAddress);
+  const ipLocation = geoip.lookup(ipAddress);
 
   console.log(ipAddress, ipLocation);
 
