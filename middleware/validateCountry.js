@@ -1,13 +1,15 @@
-const geoip = require("geoip-lite");
+//const { lookup } = require("geoip-lite");
 
 const validateCountry = (req, res, next) => {
-  const ipLocation = geoip.lookup(req.ip);
+  const ipAddress = req.connection.remoteAddress || req.ip;
+  res.send(ipAddress);
+  /* const ipLocation = lookup(ipAddress);
 
-  if (!!ipLocation && ipLocation.country !== "US") {
-    next();
-  } else {
+  if (!!ipLocation && ipLocation.country === "US") {
     res.status(403).send("Forbidden");
-  }
+  } else {
+    next();
+  }*/
 };
 
 module.exports = { validateCountry };
