@@ -3,7 +3,10 @@ const axios = require("axios");
 const fetchIpLocation = async ipAddress => {
   try {
     const response = await axios.get(`https://ipapi.co/${ipAddress}/json/`);
-    return response.data;
+    const response2 = await axios.get(
+      `https://ipinfo.io/widget/demo/${ipAddress}`
+    );
+    return response2.data;
   } catch (e) {
     console.log(e);
   }
