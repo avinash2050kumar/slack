@@ -1,8 +1,8 @@
 //const { lookup } = require("geoip-lite");
 
 const validateCountry = (req, res, next) => {
-  //const ipAddress = req.connection.remoteAddress || req.ip;
-  res.send("Hello");
+  const ipAddress = req.connection.remoteAddress || req.ip;
+  res.send("Hello" + ipAddress);
   /* const ipLocation = lookup(ipAddress);
 
   if (!!ipLocation && ipLocation.country === "US") {
