@@ -6,7 +6,9 @@ const validateCountry = (req, res, next) => {
 
   const ipLocation = lookup(ipAddress);
 
-  if (!!ipLocation && ipLocation.country === "US") {
+  console.log(ipAddress, ipLocation);
+
+  if (!!ipLocation && ipLocation.country && ipLocation.country === "US") {
     res.status(403).send("Forbidden");
   } else {
     //next();
