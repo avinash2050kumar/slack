@@ -1,4 +1,5 @@
 const axios = require("axios");
+const geoip = require("geoip-lite");
 
 const fetchIpLocation = async ipAddress => {
   try {
@@ -13,15 +14,19 @@ const fetchIpLocation = async ipAddress => {
 };
 
 const validateCountry = (req, res, next) => {
-  const ipAddress = req.headers["x-forwarded-for"]; //|| req.connection.remoteAddress || req.ip;
+  const ipAddress = req.headers["x-forwarded-for"] || req.ip; //|| req.connection.remoteAddress || req.ip;
 
-  fetchIpLocation(ipAddress)
+  const geo = geoip.lookup(ipAddress);
+
+  res.send(geo).status(200);
+
+  /*fetchIpLocation(ipAddress)
     .then(ipLocation => {
       res.status(200).send(ipLocation);
     })
     .catch(err => {
       res.send(err).status(500);
-    });
+    });*/
 };
 
 module.exports = { validateCountry };

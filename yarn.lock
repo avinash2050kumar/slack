@@ -695,7 +695,7 @@ function-bind@^1.1.1:
   resolved "https://registry.npmjs.org/function-bind/-/function-bind-1.1.1.tgz"
   integrity sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==
 
-geoip-lite@1.4.7:
+geoip-lite@^1.4.7:
   version "1.4.7"
   resolved "https://registry.yarnpkg.com/geoip-lite/-/geoip-lite-1.4.7.tgz#0142051023e3a2fb12bd539c5d627dcaff69af74"
   integrity sha512-JQHntlH7B/nR6Ec8ZJTuKsSdRNrR+snrfBNy0y0wVYWyVVi/MoDlXyv7P3wmozdlyshta6rXfbtK7qu/9lvEog==
