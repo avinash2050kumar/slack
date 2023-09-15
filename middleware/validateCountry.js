@@ -8,7 +8,7 @@ const fetchIpLocation = async ipAddress => {
 
     return response.data;
   } catch (e) {
-    throw new Error("Something went wrong");
+    res.send("Something went wrong").status(401);
   }
 };
 
@@ -23,12 +23,12 @@ const validateCountry = (req, res, next) => {
         ipLocation.countryCode === "US" ||
         ipLocation.proxy
       ) {
-        throw new Error("Unauthorized");
+        res.send("Unauthorized").status(401);
       }
       next();
     })
     .catch(err => {
-      throw new Error("Something went wrong");
+      res.send("Something went wrong").status(401);
     });
 };
 
