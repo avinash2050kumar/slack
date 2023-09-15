@@ -3,24 +3,33 @@ const axios = require("axios");
 const fetchIpLocation = async ipAddress => {
   try {
     const response = await axios.get(
-      `http://ip-api.com/json/${ipAddress}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,proxy,query`
+      `http://ip-api.com/json/${ipAddress}?fields=status,countryCode,proxy`
     );
 
     return response.data;
   } catch (e) {
-    console.log(e);
+    throw new Error("Something went wrong");
   }
 };
 
 const validateCountry = (req, res, next) => {
-  const ipAddress = req.headers["x-forwarded-for"] || req.ip; //|| req.connection.remoteAddress || req.ip;
+  // change based on server type
+  const ipAddress =
+    req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
   fetchIpLocation(ipAddress)
     .then(ipLocation => {
-      res.status(200).send(ipLocation);
+      if (
+        ipLocation.status === "fail" ||
+        ipLocation.countryCode === "US" ||
+        ipLocation.proxy
+      ) {
+        throw new Error("Unauthorized");
+      }
+      next();
     })
     .catch(err => {
-      res.send(err).status(500);
+      throw new Error("Something went wrong");
     });
 };
 
