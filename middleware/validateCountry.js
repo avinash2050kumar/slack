@@ -14,8 +14,7 @@ const fetchIpLocation = async ipAddress => {
 
 const validateCountry = (req, res, next) => {
   // change based on server type
-  const ipAddress =
-    req.ip || req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  const ipAddress = req.headers["x-forwarded-for"]; //|| req.connection.remoteAddress; req.ip ||
 
   fetchIpLocation(ipAddress)
     .then(ipLocation => {
