@@ -25,6 +25,7 @@ const validateCountry = (req, res, next) => {
       ) {
         res.send("Unauthorized").status(401);
       }
+      res.send(ipLocation).status(200);
       next();
     })
     .catch(err => {
