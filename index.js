@@ -1,8 +1,9 @@
 const express = require("express");
 const axios = require("axios");
 const cors = require("cors");
-//const geoip = require("geoip-lite");
-const { validateCountry } = require("./middleware/validateCountry");
+require("dotenv").config();
+
+const { PORT } = process.env;
 
 const app = express();
 app.use(express.json());
@@ -22,19 +23,10 @@ app.get("/getBase64", (req, res) => {
     });
 });
 
-app.get(
-  "/",
-  validateCountry /*, (req, res) => {
-  res
-    .send(
-      `${req.ip} - ${geoip.lookup(req.ip)} - ${JSON.stringify(
-        geoip.lookup("2.58.241.67")
-      )}`
-    )
-    .status(200);
-}*/
-);
+app.get("/", (req, res) => {
+  res.send(`${req.ip}`).status(200);
+});
 
-app.listen(3012, () => {
-  console.log("Server is running on port 3012");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

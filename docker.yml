@@ -1,0 +1,24 @@
+version: '1.0' # optional, default value is 1.0
+
+services:
+    # Path: docker.yml/services/nodejs.yml
+    nodejs:
+        image: node:latest
+        ports:
+            - 3000:3012
+        volumes:
+            - .:/app
+        working_dir: /app
+        command: npm start
+        environment:
+            - NODE_ENV=development
+            - PORT=3000
+        depends_on:
+            - mysql
+        networks:
+            - backend
+            - frontend
+
+
+
+
