@@ -27,6 +27,18 @@ app.get("/", (req, res) => {
   res.send(`${req.ip}`).status(200);
 });
 
+app.post("/", async (req, res) => {
+  try {
+    const response = await axios.post(req.body.url, req.body);
+
+    res.status(200).send({
+      message: "ok"
+    });
+  } catch (error) {
+    //
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on port: ${PORT}`);
 });
