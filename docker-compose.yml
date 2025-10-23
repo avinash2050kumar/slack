@@ -1,35 +1,15 @@
 version: '1'
 
-name: 'service-name'
+name: 'base64'
 services:
-  drupal:
-    image: drupal
-    ports:
-      - '8080:80'
-    container_name: 'drupal'
-    environment:
-      - MYSQL_DATABASE=drupal
-      - MYSQL_USER=drupal
-      - MYSQL_PASSWORD=drupal
-      - MYSQL_HOST=mysql
-    restart: always
-
-  postgres:
-    image: postgres
-    ports:
-      - '5432:5432'
-    container_name: 'postgres'
-    environment:
-        - POSTGRES_PASSWORD=myPassword
-        - POSTGRES_USER=postgres
-        - POSTGRES_DB=postgres
-    restart: always
+  web:
+    container_name: 'web'
+    build:
+        context: .
+        dockerfile: Dockerfile
+    env_file:
+      - .env
 
 
-volumes:
-  drupal-modules:
-  drupal-profiles:
-  drupal-sites:
-  drupal-themes:
 
 
