@@ -50,13 +50,7 @@ app.post("/", async (req, res) => {
 
 app.post("/track", async (req, res) => {
   try {
-    const eventData = {
-      _raw: req.body,
-      ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
-      userAgent: req.headers["user-agent"] || null
-    };
-
-    const event = await TrackEvent.create(eventData);
+    const event = await TrackEvent.create(req.body);
 
     return res.status(200).json({
       message: "Track event stored successfully",
