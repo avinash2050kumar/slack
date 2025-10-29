@@ -6,45 +6,42 @@ require("dotenv").config();
 
 const { PORT, MONGO_URI } = process.env;
 
-if (!MONGO_URI) {
-  throw new Error("Missing MONGO_URI environment variable");
-}
+if (!MONGO_URI) throw new Error("Missing MONGO_URI environment variable");
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: "5mb" })); // support large dynamic payloads
 app.use(cors());
 
-// ✅ Mongoose Schema
-const eventSchema = new mongoose.Schema(
+// ✅ Dynamic Schema for Events
+const trackEventSchema = new mongoose.Schema(
   {
-    eventName: String,
-    data: Object
+    _raw: { type: mongoose.Schema.Types.Mixed, required: true }, // Store full original payload ✅
+    ip: String,
+    userAgent: String
   },
-  { timestamps: true } // Automatically adds createdAt + updatedAt
+  { strict: false, timestamps: true }
 );
 
-const TrackEvent = mongoose.model("TrackEvent", eventSchema);
+const TrackEvent = mongoose.model("TrackEvent", trackEventSchema);
 
 // ✅ Convert URL to Base64
-app.get("/getBase64", (req, res) => {
-  axios
-    .get(req.query.url, { responseType: "arraybuffer" })
-    .then(response => {
-      const buffer = Buffer.from(response.data, "binary").toString("base64");
-      return res.status(200).send(buffer);
-    })
-    .catch(err => {
-      console.error(err);
-      return res.status(500).send("Error converting to Base64");
+app.get("/getBase64", async (req, res) => {
+  try {
+    const response = await axios.get(req.query.url, {
+      responseType: "arraybuffer"
     });
+    const base64 = Buffer.from(response.data, "binary").toString("base64");
+    res.status(200).send(base64);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error converting to Base64");
+  }
 });
 
 // ✅ Get client IP
-app.get("/", (req, res) => {
-  return res.status(200).send(req.ip);
-});
+app.get("/", (req, res) => res.status(200).send(req.ip));
 
-// ✅ Proxy POST request
+// ✅ Proxy POST
 app.post("/", async (req, res) => {
   try {
     await axios.post(req.body.url, req.body);
@@ -55,13 +52,19 @@ app.post("/", async (req, res) => {
   }
 });
 
-// ✅ Store Tracking Event in MongoDB via Mongoose
+// ✅ Segment-style Tracking + Dynamic Payload Support
 app.post("/track", async (req, res) => {
   try {
-    const event = await TrackEvent.create(req.body);
+    const eventData = {
+      _raw: req.body,
+      ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
+      userAgent: req.headers["user-agent"] || null
+    };
+
+    const event = await TrackEvent.create(eventData);
 
     return res.status(200).json({
-      message: "Track event stored",
+      message: "Track event stored successfully",
       insertedId: event._id
     });
   } catch (err) {
@@ -70,15 +73,14 @@ app.post("/track", async (req, res) => {
   }
 });
 
-// ✅ Connect DB ➤ THEN Start Server
+// ✅ Connect & Start Server
 mongoose
   .connect(MONGO_URI)
   .then(() => {
     console.log("✅ MongoDB connected");
-
-    app.listen(PORT || 3000, () => {
-      console.log(`✅ Server running on port ${PORT || 3000}`);
-    });
+    app.listen(PORT || 3000, () =>
+      console.log(`✅ Server running on port ${PORT || 3000}`)
+    );
   })
   .catch(err => {
     console.error("❌ MongoDB connection error:", err);
