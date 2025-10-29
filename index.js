@@ -40,27 +40,13 @@ app.post("/track", async (req, res) => {
   try {
     const event = await TrackEvent.create(req.body);
 
-    const payload = {
-      url: process.env.SLACK,
-      text: `Atlas`,
-      attachments: [
-        {
-          color: "#f0f",
-          fields: [{ title: "Event", value: req.body, short: false }]
-        }
-      ]
-    };
-
-    await axios.post("https://slack-ydfb.vercel.app/", payload, {
-      headers: { "Content-Type": "application/json" },
-      timeout: 8000
-    });
-
+    console.log(req.body);
     return res.status(200).json({
       message: "Track event stored successfully",
       insertedId: event._id
     });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: err.message });
   }
 });
