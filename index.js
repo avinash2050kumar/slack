@@ -16,7 +16,6 @@ app.use(cors());
 
 const trackEventSchema = new mongoose.Schema(
   {
-    _raw: { type: mongoose.Schema.Types.Mixed, required: true },
     ip: String,
     userAgent: String
   },
@@ -38,15 +37,13 @@ app.post("/", async (req, res) => {
 
 app.post("/track", async (req, res) => {
   try {
-    const event = await TrackEvent.create({ _raw: req.body });
+    const event = await TrackEvent.create({ ...req.body });
 
-    console.log(req.body);
     return res.status(200).json({
       message: "Track event stored successfully",
       insertedId: event._id
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({ error: err.message });
   }
 });
