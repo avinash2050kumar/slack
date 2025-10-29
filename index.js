@@ -38,7 +38,7 @@ app.post("/", async (req, res) => {
 
 app.post("/track", async (req, res) => {
   try {
-    const event = await TrackEvent.create(req.body);
+    const event = await TrackEvent.create({ _raw: req.body });
 
     console.log(req.body);
     return res.status(200).json({
