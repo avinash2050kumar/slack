@@ -56,7 +56,8 @@ app.post("/", async (req, res) => {
 app.post("/track", async (req, res) => {
   try {
     const eventData = {
-      _raw: req.body,
+      ...req.body,
+      _raw: {},
       ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || null,
       userAgent: req.headers["user-agent"] || null
     };
