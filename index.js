@@ -1,56 +1,51 @@
 const express = require("express");
 const axios = require("axios");
-const { MongoClient } = require("mongodb");
+const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
-const { PORT } = process.env;
+const { PORT, MONGO_URI } = process.env;
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-let db;
-async function connectToDB() {
-  try {
-    const client = new MongoClient(MONGO_URI);
-    await client.connect();
-    console.log("✅ MongoDB Atlas connected");
-    db = client.db("segmentEventsDB"); // choose database name
-  } catch (err) {
-    console.error("❌ MongoDB Connection Failed", err);
-    process.exit(1);
-  }
-}
-connectToDB();
+// Create a generic mongoose schema for track events (flexible)
+const trackEventSchema = new mongoose.Schema(
+  {
+    event: String,
+    properties: Object,
+    insertedAt: { type: Date, default: Date.now }
+  },
+  { strict: false } // allows dynamic fields
+);
 
+const TrackEvent = mongoose.model("trackEvents", trackEventSchema);
+
+// Routes
 app.get("/getBase64", (req, res) => {
   axios
-    .get(req.query.url, {
-      responseType: "arraybuffer"
-    })
+    .get(req.query.url, { responseType: "arraybuffer" })
     .then(response => {
-      const buffer = Buffer.from(response.data, "binary").toString("base64");
-      return res.send(buffer).status(200);
+      const buffer = Buffer.from(response.data).toString("base64");
+      res.status(200).send(buffer);
     })
     .catch(err => {
-      return res.send(err).status(500);
+      console.error(err);
+      res.status(500).send({ error: "Failed to fetch file" });
     });
 });
 
 app.get("/", (req, res) => {
-  res.send(`${req.ip}`).status(200);
+  res.status(200).send(req.ip);
 });
 
 app.post("/", async (req, res) => {
   try {
-    const response = await axios.post(req.body.url, req.body);
-
-    res.status(200).send({
-      message: "ok"
-    });
+    await axios.post(req.body.url, req.body);
+    res.status(200).send({ message: "ok" });
   } catch (error) {
-    //
+    res.status(500).send({ error: "Failed" });
   }
 });
 
@@ -62,22 +57,28 @@ app.post("/track", async (req, res) => {
       return res.status(400).json({ error: "Invalid event payload" });
     }
 
-    const collection = db.collection("trackEvents");
-    const result = await collection.insertOne({
-      ...event,
-      insertedAt: new Date()
-    });
+    const result = await TrackEvent.create(event);
 
-    return res.status(200).json({
+    res.status(200).json({
       message: "Track event stored",
-      insertedId: result.insertedId
+      insertedId: result._id
     });
   } catch (err) {
     console.error("Track Event Error:", err);
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port: ${PORT}`);
-});
+// Connect DB → Then Start Server
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB connected");
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+  })
+  .catch(err => {
+    console.error("❌ MongoDB connection failed:", err);
+    process.exit(1);
+  });
