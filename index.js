@@ -1,28 +1,29 @@
 const express = require("express");
 const axios = require("axios");
-const { MongoClient } = require("mongodb");
+const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
 const { PORT, MONGO_URI } = process.env;
 
 if (!MONGO_URI) {
-  throw new Error("Missing MONGODB_URI environment variable");
+  throw new Error("Missing MONGO_URI environment variable");
 }
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-// ✅ Global Mongo Client for Serverless
-let cachedClient = null;
-async function connectDB() {
-  if (cachedClient) return cachedClient;
-  const client = new MongoClient(MONGO_URI);
-  await client.connect();
-  cachedClient = client;
-  return client;
-}
+// ✅ Mongoose Schema
+const eventSchema = new mongoose.Schema(
+  {
+    eventName: String,
+    data: Object
+  },
+  { timestamps: true } // Automatically adds createdAt + updatedAt
+);
+
+const TrackEvent = mongoose.model("TrackEvent", eventSchema);
 
 // ✅ Convert URL to Base64
 app.get("/getBase64", (req, res) => {
@@ -38,38 +39,30 @@ app.get("/getBase64", (req, res) => {
     });
 });
 
-// ✅ Return Client IP
+// ✅ Get client IP
 app.get("/", (req, res) => {
-  res.status(200).send(req.ip);
+  return res.status(200).send(req.ip);
 });
 
 // ✅ Proxy POST request
 app.post("/", async (req, res) => {
   try {
     await axios.post(req.body.url, req.body);
-    return res.status(200).json({ message: "ok" });
+    res.status(200).json({ message: "ok" });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "request failed" });
+    res.status(500).json({ error: "request failed" });
   }
 });
 
-// ✅ Store event in MongoDB Atlas
+// ✅ Store Tracking Event in MongoDB via Mongoose
 app.post("/track", async (req, res) => {
   try {
-    const client = await connectDB(MONGO_URI);
-    const db = client.db("analytics");
-
-    const event = {
-      ...req.body,
-      insertedAt: new Date()
-    };
-
-    const result = await db.collection("trackEvents").insertOne(event);
+    const event = await TrackEvent.create(req.body);
 
     return res.status(200).json({
       message: "Track event stored",
-      insertedId: result.insertedId
+      insertedId: event._id
     });
   } catch (err) {
     console.error("Track Event Error:", err);
@@ -77,6 +70,17 @@ app.post("/track", async (req, res) => {
   }
 });
 
-app.listen(PORT || 3000, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// ✅ Connect DB ➤ THEN Start Server
+mongoose
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB connected");
+
+    app.listen(PORT || 3000, () => {
+      console.log(`✅ Server running on port ${PORT || 3000}`);
+    });
+  })
+  .catch(err => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
