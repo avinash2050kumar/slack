@@ -18,7 +18,7 @@ app.use(cors());
 let cachedClient = null;
 async function connectDB() {
   if (cachedClient) return cachedClient;
-  const client = new MongoClient(MONGODB_URI);
+  const client = new MongoClient(MONGO_URI);
   await client.connect();
   cachedClient = client;
   return client;
@@ -57,7 +57,7 @@ app.post("/", async (req, res) => {
 // ✅ Store event in MongoDB Atlas
 app.post("/track", async (req, res) => {
   try {
-    const client = await connectDB();
+    const client = await connectDB(MONGO_URI);
     const db = client.db("analytics");
 
     const event = {
