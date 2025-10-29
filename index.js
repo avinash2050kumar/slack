@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const { MongoClient } = require("mongodb");
 const cors = require("cors");
 require("dotenv").config();
 
@@ -8,6 +9,20 @@ const { PORT } = process.env;
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+let db;
+async function connectToDB() {
+  try {
+    const client = new MongoClient(MONGO_URI);
+    await client.connect();
+    console.log("✅ MongoDB Atlas connected");
+    db = client.db("segmentEventsDB"); // choose database name
+  } catch (err) {
+    console.error("❌ MongoDB Connection Failed", err);
+    process.exit(1);
+  }
+}
+connectToDB();
 
 app.get("/getBase64", (req, res) => {
   axios
@@ -36,6 +51,30 @@ app.post("/", async (req, res) => {
     });
   } catch (error) {
     //
+  }
+});
+
+app.post("/track", async (req, res) => {
+  try {
+    const event = req.body;
+
+    if (!event || !event.event) {
+      return res.status(400).json({ error: "Invalid event payload" });
+    }
+
+    const collection = db.collection("trackEvents");
+    const result = await collection.insertOne({
+      ...event,
+      insertedAt: new Date()
+    });
+
+    return res.status(200).json({
+      message: "Track event stored",
+      insertedId: result.insertedId
+    });
+  } catch (err) {
+    console.error("Track Event Error:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 
