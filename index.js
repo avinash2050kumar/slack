@@ -25,18 +25,6 @@ const trackEventSchema = new mongoose.Schema(
 
 const TrackEvent = mongoose.model("TrackEvent", trackEventSchema);
 
-app.get("/getBase64", async (req, res) => {
-  try {
-    const response = await axios.get(req.query.url, {
-      responseType: "arraybuffer"
-    });
-    const base64 = Buffer.from(response.data, "binary").toString("base64");
-    res.status(200).send(base64);
-  } catch (err) {
-    res.status(500).send("Error converting to Base64");
-  }
-});
-
 app.get("/", (req, res) => res.status(200).send(req.ip));
 
 app.post("/", async (req, res) => {
@@ -51,6 +39,22 @@ app.post("/", async (req, res) => {
 app.post("/track", async (req, res) => {
   try {
     const event = await TrackEvent.create(req.body);
+
+    const payload = {
+      url: process.env.SLACK,
+      text: `Atlas`,
+      attachments: [
+        {
+          color: "#f0f",
+          fields: [{ title: "Event", value: req.body, short: false }]
+        }
+      ]
+    };
+
+    await axios.post("https://slack-ydfb.vercel.app/", payload, {
+      headers: { "Content-Type": "application/json" },
+      timeout: 8000
+    });
 
     return res.status(200).json({
       message: "Track event stored successfully",
