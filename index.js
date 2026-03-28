@@ -17,9 +17,9 @@ app.use(cors());
 const trackEventSchema = new mongoose.Schema(
   {
     ip: String,
-    userAgent: String
+    userAgent: String,
   },
-  { strict: false, timestamps: true }
+  { strict: false, timestamps: true },
 );
 
 const TrackEvent = mongoose.model("TrackEvent", trackEventSchema);
@@ -35,13 +35,21 @@ app.post("/", async (req, res) => {
   }
 });
 
+app.get("/api/ip", (req, res) => {
+  const ip =
+    req.headers["x-forwarded-for"]?.toString().split(",")[0] ||
+    req.socket.remoteAddress;
+
+  res.json({ ip });
+});
+
 app.post("/track", async (req, res) => {
   try {
     const event = await TrackEvent.create({ ...req.body });
 
     return res.status(200).json({
       message: "Track event stored successfully",
-      insertedId: event._id
+      insertedId: event._id,
     });
   } catch (err) {
     return res.status(500).json({ error: err.message });
@@ -52,10 +60,10 @@ mongoose
   .connect(MONGO_URI)
   .then(() => {
     app.listen(PORT || 3000, () =>
-      console.log(`Server running on port ${PORT || 3000}`)
+      console.log(`Server running on port ${PORT || 3000}`),
     );
   })
-  .catch(err => {
+  .catch((err) => {
     console.error("MongoDB connection error:", err);
     process.exit(1);
   });
