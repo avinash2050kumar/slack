@@ -35,12 +35,44 @@ app.post("/", async (req, res) => {
   }
 });
 
-app.get("/api/ip", (req, res) => {
-  const ip =
-    req.headers["x-forwarded-for"]?.toString().split(",")[0] ||
-    req.socket.remoteAddress;
+app.get("/api/ip", async (req, res) => {
+  const forwardedIp = req.headers["x-forwarded-for"]?.toString().split(",")[0];
+  const socketIp = req.socket.remoteAddress;
+  const ip = (forwardedIp || socketIp || "").replace(/^::ffff:/, "").trim();
 
-  res.json({ ip });
+  if (!ip) {
+    return res.status(400).json({ error: "location not found" });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://free.freeipapi.com/api/json/${ip}`,
+    );
+    const data = response.data;
+
+    // Format address
+    const formattedAddress = [
+      data.cityName,
+      data.regionName,
+      data.countryName,
+      data.zipCode,
+    ]
+      .filter(Boolean)
+      .join(", ");
+
+    // Final response
+    return res.status(200).json({
+      countryName: data.countryName,
+      countryCode: data.countryCode,
+      capital: data.capital,
+      cityName: data.cityName,
+      regionName: data.regionName,
+      isProxy: data.isProxy,
+      formattedAddress,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "failed to fetch location details" });
+  }
 });
 
 app.post("/track", async (req, res) => {
