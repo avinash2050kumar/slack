@@ -61,15 +61,18 @@ app.get("/api/ip", async (req, res) => {
       .join(", ");
 
     // Final response
-    return res.status(200).json({
-      countryName: data.countryName,
-      countryCode: data.countryCode,
-      capital: data.capital,
-      cityName: data.cityName,
-      regionName: data.regionName,
-      isProxy: data.isProxy,
-      formattedAddress,
-    });
+    return res
+      .status(200)
+      .json({
+        ip,
+        countryName: data.countryName,
+        countryCode: data.countryCode,
+        capital: data.capital,
+        cityName: data.cityName,
+        regionName: data.regionName,
+        isProxy: data.isProxy,
+        formattedAddress,
+      });
   } catch (error) {
     return res.status(500).json({ error: "failed to fetch location details" });
   }
