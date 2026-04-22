@@ -10,6 +10,7 @@ const { PORT, MONGO_URI } = process.env;
 if (!MONGO_URI) throw new Error("Missing MONGO_URI environment variable");
 
 const app = express();
+app.set("trust proxy", true);
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "5mb" }));
 app.use(cors());
@@ -25,6 +26,30 @@ const trackEventSchema = new mongoose.Schema(
 const TrackEvent = mongoose.model("TrackEvent", trackEventSchema);
 
 app.get("/", (req, res) => res.status(200).send(req.ip));
+
+const getWebhookUrl = (req) => `${req.protocol}://${req.get("host")}/webhook`;
+
+app.get("/webhook", (req, res) => {
+  console.log("webhook", {
+    message: "Use this URL to receive webhook notifications",
+    webhookUrl: getWebhookUrl(req),
+  });
+  return res.status(200).json({
+    message: "Use this URL to receive webhook notifications",
+    webhookUrl: getWebhookUrl(req),
+  });
+});
+
+app.post("/webhook", (req, res) => {
+  const receivedItem = req.body?.item ?? req.body;
+
+  console.log("Webhook received item:", receivedItem);
+
+  return res.status(200).json({
+    message: "Webhook received successfully",
+    received: true,
+  });
+});
 
 app.post("/", async (req, res) => {
   try {
@@ -61,18 +86,16 @@ app.get("/api/ip", async (req, res) => {
       .join(", ");
 
     // Final response
-    return res
-      .status(200)
-      .json({
-        ip,
-        countryName: data.countryName,
-        countryCode: data.countryCode,
-        capital: data.capital,
-        cityName: data.cityName,
-        regionName: data.regionName,
-        isProxy: data.isProxy,
-        formattedAddress,
-      });
+    return res.status(200).json({
+      ip,
+      countryName: data.countryName,
+      countryCode: data.countryCode,
+      capital: data.capital,
+      cityName: data.cityName,
+      regionName: data.regionName,
+      isProxy: data.isProxy,
+      formattedAddress,
+    });
   } catch (error) {
     return res.status(500).json({ error: "failed to fetch location details" });
   }
